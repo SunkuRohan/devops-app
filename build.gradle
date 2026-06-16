@@ -27,10 +27,10 @@ test {
 }
 
 jar {
-    enabled = true
-    archiveClassifier = ''
+    enabled = false
 }
 
 bootJar {
-    archiveClassifier = 'boot'
+    enabled = true
+    archiveClassifier = ''
 }
