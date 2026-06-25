@@ -1,0 +1,9 @@
+# Local state — never commit this
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+
+# Sensitive variable files
+*.tfvars
+!example.tfvars
