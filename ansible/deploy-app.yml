@@ -1,0 +1,46 @@
+---
+# Playbook: deploy-app.yml
+# Purpose: Pull and run the devops-app Docker container on the target server.
+# Run this AFTER setup-server.yml has installed Docker.
+
+- name: Deploy devops-app container
+  hosts: local
+  become: true
+
+  vars:
+    app_name: devops-app
+    app_image: "devops-app:1.0.0"   # Locally built image; replace with ECR URL for real deployment
+    app_port: 8080
+
+  tasks:
+
+    - name: Stop existing container if running
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Run devops-app container
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        image: "{{ app_image }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "{{ app_port }}:8080"
+        env:
+          APP_ENVIRONMENT: "production"
+          APP_VERSION: "1.0.0"
+
+    - name: Wait for app to become healthy
+      uri:
+        url: "http://localhost:{{ app_port }}/api/health"
+        status_code: 200
+      register: health_check
+      retries: 5
+      delay: 3
+      until: health_check.status == 200
+
+    - name: Show health check response
+      debug:
+        msg: "{{ health_check.json }}"
